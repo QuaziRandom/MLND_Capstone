@@ -26,9 +26,34 @@ import sys, os
 import struct, array
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
+
+def load_mnist(num_valid=5000):
+    train_images = load_mnist_images(os.path.join(os.path.dirname(__file__),"mnist/train-images-idx3-ubyte"))
+    train_labels = load_mnist_labels(os.path.join(os.path.dirname(__file__),"mnist/train-labels-idx1-ubyte"))
+    test_images = load_mnist_images(os.path.join(os.path.dirname(__file__),"mnist/t10k-images-idx3-ubyte"))
+    test_labels = load_mnist_labels(os.path.join(os.path.dirname(__file__),"mnist/t10k-labels-idx1-ubyte"))
+    valid_images = train_images[-num_valid:]
+    valid_labels = train_labels[-num_valid:]
+    train_images = train_images[:-num_valid]
+    train_labels = train_labels[:-num_valid]
+
+    train_images = (train_images - np.mean(train_images)) / 255.0
+    valid_images = (valid_images - np.mean(train_images)) / 255.0
+    test_images = (test_images - np.mean(train_images)) / 255.0
+
+    class MNISTDataSet(object):
+        pass
+    dataset = MNISTDataSet()
+    
+    dataset.train_images, dataset.train_labels = train_images, train_labels
+    dataset.valid_images, dataset.valid_labels = valid_images, valid_labels
+    dataset.test_images, dataset.test_labels = test_images, test_labels
+
+    return dataset
 
 def load_mnist_labels(path_to_mnist_labels):
-    assert os.path.exists(path_to_mnist_labels), "Invalid path"
+    assert os.path.exists(path_to_mnist_labels), "Invalid path {}".format(path_to_mnist_labels)
     with open(path_to_mnist_labels, "rb") as f:
         magic, num_labels = struct.unpack(">II", f.read(8))
         assert magic == 2049, "Magic number not matching"
@@ -38,7 +63,7 @@ def load_mnist_labels(path_to_mnist_labels):
     return labels
 
 def load_mnist_images(path_to_mnist_images):
-    assert os.path.exists(path_to_mnist_images), "Invalid path"
+    assert os.path.exists(path_to_mnist_images), "Invalid path {}".format(path_to_mnist_images)
     with open(path_to_mnist_images, "rb") as f:
         magic, num_images, num_rows, num_columns = struct.unpack(">IIII", f.read(16))
         assert magic == 2051, "Magic number not matching"
