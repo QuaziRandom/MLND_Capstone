@@ -72,13 +72,20 @@ def main(_):
         evaluation = evaluate_graph(logits, tf_train_labels)
 
         merged_summaries = tf.merge_all_summaries()
-
         summary_writer = tf.train.SummaryWriter('logs/mnist_single_digit', graph)
+
+        saver = tf.train.Saver()
     
         with tf.Session() as sess:
-            tf.initialize_all_variables().run()
+            ckpt = tf.train.get_checkpoint_state('checkpoints/mnist_single_digit')
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+                start_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+            else:
+                tf.initialize_all_variables().run()
+                start_step = 0
 
-            for step in xrange(3000):
+            for step in xrange(start_step, 20001):
                 offset = (step * 128) % (mnist.train_images.shape[0] - 128)
                 images = mnist.train_images[offset:(offset + 128), :, :, None]
                 labels = mnist.train_labels[offset:(offset + 128)]
@@ -102,9 +109,11 @@ def main(_):
                     summary = sess.run(merged_summaries, feed_dict=feed_dict)
                     summary_writer.add_summary(summary, step)
 
-                if step % 999 == 0:
-                    #print "train_accuracy = {}".format(evaluate_on_dataset(mnist.train_images, mnist.train_labels))
+                if step != 0 and step % 300 == 0:
+                    print "train_accuracy = {}".format(evaluate_on_dataset(mnist.train_images, mnist.train_labels))
                     print "test_accuracy = {}".format(evaluate_on_dataset(mnist.test_images, mnist.test_labels))
+                    saver_path = saver.save(sess, 'checkpoints/mnist_single_digit/model.ckpt', global_step=step)
+                    print "New checkpoint created at {}".format(saver_path)
 
 if __name__ == '__main__':
     tf.app.run()
