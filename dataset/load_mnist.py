@@ -28,7 +28,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-def load_mnist(num_valid=5000):
+def load_mnist(num_valid=5000, normalized=True):
     train_images = load_mnist_images(os.path.join(os.path.dirname(__file__),"mnist/train-images-idx3-ubyte"))
     train_labels = load_mnist_labels(os.path.join(os.path.dirname(__file__),"mnist/train-labels-idx1-ubyte"))
     test_images = load_mnist_images(os.path.join(os.path.dirname(__file__),"mnist/t10k-images-idx3-ubyte"))
@@ -38,9 +38,10 @@ def load_mnist(num_valid=5000):
     train_images = train_images[:-num_valid]
     train_labels = train_labels[:-num_valid]
 
-    train_images = (train_images - np.mean(train_images)) / 255.0
-    valid_images = (valid_images - np.mean(train_images)) / 255.0
-    test_images = (test_images - np.mean(train_images)) / 255.0
+    if normalized:
+        train_images = (train_images - np.mean(train_images)) / 255.0
+        valid_images = (valid_images - np.mean(train_images)) / 255.0
+        test_images = (test_images - np.mean(train_images)) / 255.0
 
     class MNISTDataSet(object):
         pass
