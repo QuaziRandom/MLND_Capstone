@@ -109,7 +109,7 @@ def main(_):
                     summary = sess.run(merged_summaries, feed_dict=feed_dict)
                     summary_writer.add_summary(summary, step)
 
-                if step != 0 and step % 300 == 0:
+                if step != 0 and step % 1000 == 0:
                     print "train_accuracy = {}".format(evaluate_on_dataset(mnist.train_images, mnist.train_labels))
                     print "test_accuracy = {}".format(evaluate_on_dataset(mnist.test_images, mnist.test_labels))
                     saver_path = saver.save(sess, 'checkpoints/mnist_single_digit/model.ckpt', global_step=step)
