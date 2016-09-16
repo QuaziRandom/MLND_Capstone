@@ -124,29 +124,12 @@ def main(_):
 
     def generate_feed_dict(data, images_pl, length_labels_pl, digits_labels_pl, masks_pl):
         images, labels = data.next_batch()
-        length_labels = []
-        digits_labels = []
-        masks = []
-        for l in labels:
-            digits = np.zeros(MAX_DIGITS)
-            mask = np.zeros(MAX_DIGITS)
-            length = 0
 
-            if l != '_':
-                length = len(l)
-                if length <= MAX_DIGITS:
-                    digits[:length] = np.array([int(d) for d in l])
-                    mask[:length] = 1
-            
-            length_labels.append(length)
-            digits_labels.append(digits)
-            masks.append(mask)
-        
         feed_dict = {
             images_pl: images[:, :, :, None],
-            length_labels_pl: length_labels,
-            digits_labels_pl: digits_labels,
-            masks_pl: masks
+            length_labels_pl: labels['length'],
+            digits_labels_pl: labels['digits'],
+            masks_pl: labels['mask']
         }
 
         return feed_dict

@@ -10,6 +10,9 @@ from time import sleep
 
 from load_mnist import load_mnist
 
+MAX_GENERATE_DIGITS = 5
+MAX_LEGAL_DIGITS = MAX_GENERATE_DIGITS - 1
+
 class MNISTMulti(object):
     def __init__(self, single_images, single_labels, random_state=101010, batch_size=128, dataset_size=50000, buffer_size=16, num_threads=8):
         self._single_images = single_images
@@ -64,18 +67,22 @@ class MNISTMulti(object):
         # Note there could be leading zeros generated, but that should be OK
 
         images = np.ndarray([self._batch_size, 64, 64])
-        labels = np.ndarray([self._batch_size], dtype='S5')
+        labels = np.ndarray([self._batch_size], dtype=[
+            ('string', 'S5'), ('length', 'i4'), ('digits', 'i4', MAX_LEGAL_DIGITS), ('mask', 'i4', MAX_LEGAL_DIGITS)])
 
         for i in xrange(self._batch_size):
             # First fill in single digits into "full" image
             full_image = np.zeros([128, 192])
             
             # Generate somewhat real-world-like length of digits (street numbers)
-            multi_digit_length = max(0, min(5, int(self._random.normal(2.5, 1.5))))
+            multi_digit_length = max(0, min(MAX_GENERATE_DIGITS, int(self._random.normal(2.5, 1.5))))
 
             if multi_digit_length == 0:
                 final_image = np.zeros([64, 64])
-                final_label = '_'
+                label_string = '_'
+                label_length = multi_digit_length
+                label_digits = np.zeros(MAX_LEGAL_DIGITS)
+                label_mask = np.zeros(MAX_LEGAL_DIGITS)
             else:
                 # Pick random numbers from single digit dataset
                 im_indices = self._random.randint(0, self._single_data_size, multi_digit_length)
@@ -98,12 +105,18 @@ class MNISTMulti(object):
                 # Resize to 64x64
                 final_image = cv2.resize(cropped_image, (64,64))
 
-                # Generate label
-                final_label = ''.join(self._single_labels[im_indices].astype(np.character).tolist())
+                # Generate label data
+                label_string = ''.join(self._single_labels[im_indices].astype(np.character).tolist())
+                label_length = multi_digit_length
+                label_digits = np.zeros(MAX_LEGAL_DIGITS)                
+                label_mask = np.zeros(MAX_LEGAL_DIGITS)
+                if label_length <= MAX_LEGAL_DIGITS:
+                    label_digits[:label_length] = self._single_labels[im_indices]
+                    label_mask[:label_length] = 1
 
             # Fill in the return values
             images[i] = final_image
-            labels[i] = final_label
+            labels[i] = (label_string, label_length, label_digits, label_mask)
         
         # Perform a very simple normailzation;
         # Should be OK for MNIST dataset.
@@ -133,11 +146,11 @@ def main():
         plt.subplot(4,8,i+1)
         plt.imshow(images[0])
         plt.axis('off')
-        plt.title(labels[0])
+        plt.title(labels['string'][0])
         plt.subplot(4,8,i+2)
         plt.imshow(images[1])
         plt.axis('off')
-        plt.title(labels[1])
+        plt.title(labels['string'][1])
 
     plt.show()
 
