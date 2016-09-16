@@ -107,14 +107,14 @@ def main(_):
 
     def eval_graph(length_logits, digits_logits, labels_length, labels_digits):
         length_pred = tf.argmax(length_logits, 1)
-        length_correct = tf.equal(length_pred, labels_length)
+        length_correct = tf.equal(length_pred, tf.to_int64(labels_length))
         
         digits_pred = []
         for i in range(MAX_DIGITS):
             digits_pred.append(tf.argmax(digits_logits[i], 1))
         digits_correct = []
         for i in range(MAX_DIGITS):
-            digits_correct.append(tf.equal(digits_pred[i], labels_digits[i]))
+            digits_correct.append(tf.equal(digits_pred[i], tf.to_int64(labels_digits[:, i])))
         
         total_correct = tf.logical_and(length_correct, digits_correct[0])
         for i in range(1, MAX_DIGITS):
@@ -151,8 +151,14 @@ def main(_):
 
         return feed_dict
 
-    def test_valid_eval(sess, eval_batch, test_valid_data):
-        pass
+    def test_valid_eval(sess, eval_batch, test_valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl):
+        num_batches = test_valid_data.get_dataset_size() // BATCH_SIZE
+        correct = 0.0
+        for _ in range(num_batches):
+            feed_dict = generate_feed_dict(test_valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
+            correct += sess.run(eval_batch, feed_dict=feed_dict) * BATCH_SIZE
+        accuracy = correct / (num_batches * BATCH_SIZE) * 100.0
+        return accuracy
 
     with tf.Graph().as_default() as graph:
         images_pl = tf.placeholder(tf.float32, [BATCH_SIZE, IMAGE_HEIGHT, IMAGE_WIDTH, 1])
@@ -164,7 +170,7 @@ def main(_):
         length_logits, digits_logits = fc_graph(conv_pool, num_conv_pool, last_conv_depth, masks_pl)
         loss = loss_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
         train_step = train_graph(loss)
-        #batch_eval = eval_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
+        batch_eval = eval_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
 
         sess = tf.Session()
         sess.run(tf.initialize_all_variables())
@@ -173,8 +179,14 @@ def main(_):
             feed_dict = generate_feed_dict(train_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
             _, loss_value = sess.run([train_step, loss], feed_dict=feed_dict)
 
-            if step % 100 == 0:
-                print "Step {}: Loss = {}".format(step, loss_value)
+            if step % 20 == 0:
+                batch_accuracy = sess.run(batch_eval, feed_dict=feed_dict) * 100.0
+                print "Step {}: Loss = {}, Batch accuracy = {}%".format(step, loss_value, batch_accuracy)
+            
+            if step % 40 == 0:
+                valid_accuracy = test_valid_eval(
+                    sess, batch_eval, valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
+                print "Valid accuracy = {}%".format(valid_accuracy)
 
 
 if __name__ == '__main__':
