@@ -27,6 +27,8 @@ LENGTH_LAYER_NODES = 6
 DIGIT_LAYER_NODES = 10
 MAX_DIGITS = 4
 
+MAX_STEPS = 10000 + 1
+
 def main(_):
     mnist_single = load_mnist_single(normalized=False)
     
@@ -191,10 +193,22 @@ def main(_):
         merged_summaries = tf.merge_all_summaries()
         summary_writer = tf.train.SummaryWriter('logs/mnist_multi_digit', graph)
 
-        sess = tf.Session()
-        sess.run(tf.initialize_all_variables())
+        saver = tf.train.Saver()
 
-        for step in xrange(4001):
+        sess = tf.Session()
+        
+        ckpt = tf.train.get_checkpoint_state('checkpoints/mnist_multi_digit')
+        if ckpt and ckpt.model_checkpoint_path:
+            saver.restore(sess, ckpt.model_checkpoint_path)
+            start_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+            if start_step >= (MAX_STEPS - 1):
+                print "Model already trained to {} steps".format(start_step)
+                return
+        else:
+            sess.run(tf.initialize_all_variables())
+            start_step = 0
+
+        for step in xrange(start_step, MAX_STEPS):
             feed_dict = generate_feed_dict(train_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
             _, loss_value = sess.run([train_step, loss], feed_dict=feed_dict)
 
@@ -213,6 +227,8 @@ def main(_):
                 test_accuracy = test_valid_eval(
                     sess, batch_eval, test_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
                 print "Test accuracy = {}%".format(test_accuracy)
+                saver_path = saver.save(sess, 'checkpoints/mnist_multi_digit/model.ckpt', global_step=step)
+                print "Model checkpoint created at {}".format(saver_path)
 
 
 if __name__ == '__main__':
