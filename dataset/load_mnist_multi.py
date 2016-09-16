@@ -115,6 +115,12 @@ class MNISTMulti(object):
             self._random = np.random.RandomState(self._init_random_state)
 
         return images, labels
+    
+    def get_dataset_size(self):
+        return self._dataset_size
+
+    def get_batch_size(self):
+        return self._batch_size
 
 def main():
     mnist = load_mnist(normalized=False)
