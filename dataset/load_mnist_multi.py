@@ -3,10 +3,15 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
+from threading import Thread
+from collections import deque
+from Queue import Queue
+from time import sleep
+
 from load_mnist import load_mnist
 
 class MNISTMulti(object):
-    def __init__(self, single_images, single_labels, random_state=101010, batch_size=128, dataset_size=50000):
+    def __init__(self, single_images, single_labels, random_state=101010, batch_size=128, dataset_size=50000, buffer_size=16, num_threads=8):
         self._single_images = single_images
         self._single_labels = single_labels
         assert self._single_images.shape[0] == self._single_labels.shape[0], "Mismatch in dataset"
@@ -16,8 +21,46 @@ class MNISTMulti(object):
         self._batch_size = batch_size
         self._counter = 0
         self._dataset_size = dataset_size
+        self._max_threads = num_threads
+        self._deck_size = buffer_size
+        self._deck = deque()
+        self._task_queue = Queue()
+        self.initialize_threads()
+
+    def initialize_threads(self):
+        for i in range(self._max_threads):
+            worker = Thread(target=self.fill_deck)
+            worker.setDaemon(True)
+            worker.start()
+
+        for i in range(self._deck_size):
+            self._task_queue.put(i)
+        
+        self._task_queue.join()
+
+    class DeckRecord(object):
+        pass
+
+    def fill_deck(self):
+        while True:
+            _ = self._task_queue.get()
+            images, labels = self.next_batch_queue()
+            entry = self.DeckRecord()
+            entry.images = images
+            entry.labels = labels
+            self._deck.append(entry)
+            self._task_queue.task_done()
 
     def next_batch(self):
+        while len(self._deck) == 0:
+            print "load_mnist_multi num_threads {} or buffer_size {} too low".format(
+                self._max_threads, self._deck_size)
+            sleep(1)
+        item = self._deck.popleft()
+        self._task_queue.put(self._counter)
+        return item.images, item.labels
+    
+    def next_batch_queue(self):
         # Note there could be leading zeros generated, but that should be OK
 
         images = np.ndarray([self._batch_size, 64, 64])
@@ -76,7 +119,8 @@ class MNISTMulti(object):
 def main():
     mnist = load_mnist(normalized=False)
 
-    mnist_multi = MNISTMulti(mnist.train_images, mnist.train_labels, batch_size=2, dataset_size=32)
+    mnist_multi = MNISTMulti(
+        mnist.train_images, mnist.train_labels, batch_size=2, dataset_size=16, num_threads=2, buffer_size=8)
 
     for i in range(0, 32, 2):
         images, labels = mnist_multi.next_batch()
