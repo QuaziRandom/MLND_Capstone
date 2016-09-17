@@ -29,6 +29,7 @@ HIDDEN_2_NODES = 1024
 LENGTH_LAYER_NODES = 6
 DIGIT_LAYER_NODES = 10
 MAX_DIGITS = 4
+DROPOUT_KEEP_PROB = 0.5
 
 MAX_STEPS = 10000 + 1
 
@@ -106,7 +107,7 @@ def main(argv):
         
         return pool4, num_conv_pool, CONV_4_DEPTH
 
-    def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks):
+    def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_keep_prob):
         reduced_height = IMAGE_HEIGHT // (2**num_conv_pool_layers)
         reduced_width = IMAGE_WIDTH // (2**num_conv_pool_layers)
         pool_flat = tf.reshape(pool_layer, [-1, reduced_height * reduced_width * last_conv_depth])
@@ -119,13 +120,14 @@ def main(argv):
             variable_summary(biases.name, biases)
             hidden1 = tf.nn.relu(tf.matmul(pool_flat, weights) + biases, name='relu')
             activation_summary(hidden1.name, hidden1)
+            hidden1_drop = tf.nn.dropout(hidden1, dropout_keep_prob, name='dropout')
         
         with tf.name_scope('hidden2'):
             weights = tf.Variable(tf.truncated_normal([HIDDEN_1_NODES, HIDDEN_2_NODES], stddev=1e-3), name='weights')
             biases = tf.Variable(tf.zeros([HIDDEN_2_NODES]), name='biases')
             variable_summary(weights.name, weights)
             variable_summary(biases.name, biases)
-            hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
+            hidden2 = tf.nn.relu(tf.matmul(hidden1_drop, weights) + biases)
             activation_summary(hidden2.name, hidden2)
         
         with tf.name_scope('readout_length'):
@@ -203,11 +205,12 @@ def main(argv):
 
         return feed_dict
 
-    def test_valid_eval(sess, eval_batch, test_valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl):
+    def test_valid_eval(sess, eval_batch, test_valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl, dropout_pl):
         num_batches = test_valid_data.get_dataset_size() // BATCH_SIZE
         correct = 0.0
         for _ in range(num_batches):
             feed_dict = generate_feed_dict(test_valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
+            feed_dict[dropout_pl] = 1.0
             correct += sess.run(eval_batch, feed_dict=feed_dict) * BATCH_SIZE
         accuracy = correct / (num_batches * BATCH_SIZE) * 100.0
         return accuracy
@@ -217,9 +220,10 @@ def main(argv):
         length_labels_pl = tf.placeholder(tf.int32, [BATCH_SIZE])
         digits_labels_pl = tf.placeholder(tf.int32, [BATCH_SIZE, MAX_DIGITS])
         masks_pl = tf.placeholder(tf.float32, [BATCH_SIZE, MAX_DIGITS])
+        dropout_pl = tf.placeholder(tf.float32)
 
         conv_pool, num_conv_pool, last_conv_depth = conv_graph(images_pl)
-        length_logits, digits_logits = fc_graph(conv_pool, num_conv_pool, last_conv_depth, masks_pl)
+        length_logits, digits_logits = fc_graph(conv_pool, num_conv_pool, last_conv_depth, masks_pl, dropout_pl)
         loss = loss_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
         train_step = train_graph(loss)
         batch_eval = eval_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
@@ -245,6 +249,7 @@ def main(argv):
 
         for step in xrange(start_step, MAX_STEPS):
             feed_dict = generate_feed_dict(train_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
+            feed_dict[dropout_pl] = DROPOUT_KEEP_PROB
             _, loss_value = sess.run([train_step, loss], feed_dict=feed_dict)
 
             if step % 50 == 0:
@@ -254,13 +259,13 @@ def main(argv):
             
             if step != 0 and step % 200 == 0:
                 valid_accuracy = test_valid_eval(
-                    sess, batch_eval, valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
+                    sess, batch_eval, valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl, dropout_pl)
                 print "Valid accuracy = {}%".format(valid_accuracy)
                 # TODO: Write valid (and test) accuracy to summary somehow
             
             if step != 0 and step % 1000 == 0:
                 test_accuracy = test_valid_eval(
-                    sess, batch_eval, test_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
+                    sess, batch_eval, test_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl, dropout_pl)
                 print "Test accuracy = {}%".format(test_accuracy)
                 saver_path = saver.save(sess, os.path.join(cp_dir, 'model.ckpt'), global_step=step)
                 print "Model checkpoint created at {}".format(saver_path)
