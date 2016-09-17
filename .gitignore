@@ -5,9 +5,11 @@ dataset/svhn/
 
 # Logs (Summaries)
 logs/mnist_single_digit/
+logs/mnist_multi_digit/
 
 # Model checkpoints
 checkpoints/mnist_single_digit/
+checkpoints/mnist_multi_digit/
 
 ####### Standard Python.gitignore ####### 
 # Byte-compiled / optimized / DLL files

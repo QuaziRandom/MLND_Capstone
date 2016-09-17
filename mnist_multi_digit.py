@@ -6,6 +6,8 @@ from dataset.load_mnist import load_mnist as load_mnist_single
 from dataset.load_mnist_multi import MNISTMulti
 from helpers import variable_summary, activation_summary
 
+from helpers import parse_cmd_options
+
 # Some global constants
 TRAIN_SIZE = 2**16
 VALID_SIZE = 2**12
@@ -29,7 +31,30 @@ MAX_DIGITS = 4
 
 MAX_STEPS = 10000 + 1
 
-def main(_):
+DEFAULT_LOG_DIR = 'logs/mnist_multi_digit'
+DEFAULT_CP_DIR = 'checkpoints/mnist_multi_digit'
+
+def main(argv):
+    args = parse_cmd_options(argv)
+
+    run_name = args.run_name
+    log_dir = os.path.join(args.logdir, run_name) if args.logdir else os.path.join(DEFAULT_LOG_DIR, run_name)
+    cp_dir = os.path.join(args.cpdir, run_name) if args.cpdir else os.path.join(DEFAULT_CP_DIR, run_name)  
+
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    elif args.reset_logdir and os.listdir(log_dir) != []:
+        # TODO: Add automatic (intelligent) reset later.
+        print "Remove all files in {}".format(log_dir)
+        return
+
+    if not os.path.exists(cp_dir):
+        os.makedirs(cp_dir)
+    elif args.reset_cpdir and os.listdir(cp_dir) != []:
+        # TODO: Add automatic (intelligent) reset later.
+        print "Remove all files in {}".format(cp_dir)
+        return
+
     mnist_single = load_mnist_single(normalized=False)
     
     train_data = MNISTMulti(
@@ -191,19 +216,20 @@ def main(_):
         batch_eval = eval_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
 
         merged_summaries = tf.merge_all_summaries()
-        summary_writer = tf.train.SummaryWriter('logs/mnist_multi_digit', graph)
+        summary_writer = tf.train.SummaryWriter(log_dir, graph)
 
         saver = tf.train.Saver()
 
         sess = tf.Session()
         
-        ckpt = tf.train.get_checkpoint_state('checkpoints/mnist_multi_digit')
+        ckpt = tf.train.get_checkpoint_state(cp_dir)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            start_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1])
+            start_step = int(ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]) + 1
             if start_step >= (MAX_STEPS - 1):
-                print "Model already trained to {} steps".format(start_step)
+                print "Model already trained to {} steps".format(MAX_STEPS - 1)
                 return
+            print "Restoring from {} at step {}".format(ckpt.model_checkpoint_path, start_step)
         else:
             sess.run(tf.initialize_all_variables())
             start_step = 0
@@ -227,7 +253,7 @@ def main(_):
                 test_accuracy = test_valid_eval(
                     sess, batch_eval, test_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
                 print "Test accuracy = {}%".format(test_accuracy)
-                saver_path = saver.save(sess, 'checkpoints/mnist_multi_digit/model.ckpt', global_step=step)
+                saver_path = saver.save(sess, os.path.join(cp_dir, 'model.ckpt'), global_step=step)
                 print "Model checkpoint created at {}".format(saver_path)
 
 
