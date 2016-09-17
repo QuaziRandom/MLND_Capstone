@@ -25,6 +25,7 @@ CONV_2_DEPTH = 64
 CONV_3_DEPTH = 128
 CONV_4_DEPTH = 128
 HIDDEN_1_NODES = 2048
+HIDDEN_2_NODES = 1024
 LENGTH_LAYER_NODES = 6
 DIGIT_LAYER_NODES = 10
 MAX_DIGITS = 4
@@ -119,22 +120,30 @@ def main(argv):
             hidden1 = tf.nn.relu(tf.matmul(pool_flat, weights) + biases, name='relu')
             activation_summary(hidden1.name, hidden1)
         
+        with tf.name_scope('hidden2'):
+            weights = tf.Variable(tf.truncated_normal([HIDDEN_1_NODES, HIDDEN_2_NODES], stddev=1e-3), name='weights')
+            biases = tf.Variable(tf.zeros([HIDDEN_2_NODES]), name='biases')
+            variable_summary(weights.name, weights)
+            variable_summary(biases.name, biases)
+            hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
+            activation_summary(hidden2.name, hidden2)
+        
         with tf.name_scope('readout_length'):
             weights = tf.Variable(
-                tf.truncated_normal([HIDDEN_1_NODES, LENGTH_LAYER_NODES], stddev=1e-1), name='weights')
+                tf.truncated_normal([HIDDEN_2_NODES, LENGTH_LAYER_NODES], stddev=1e-1), name='weights')
             biases = tf.Variable(tf.zeros([LENGTH_LAYER_NODES]), name='biases')
             variable_summary(weights.name, weights)
             variable_summary(biases.name, biases)
-            length_logits = tf.matmul(hidden1, weights) + biases
+            length_logits = tf.matmul(hidden2, weights) + biases
 
         def readout_digit_graph(scope_name):
             with tf.name_scope(scope_name):
                 weights = tf.Variable(
-                    tf.truncated_normal([HIDDEN_1_NODES, DIGIT_LAYER_NODES], stddev=1e-1), name='weights')
+                    tf.truncated_normal([HIDDEN_2_NODES, DIGIT_LAYER_NODES], stddev=1e-1), name='weights')
                 biases = tf.Variable(tf.zeros([DIGIT_LAYER_NODES]), name='biases')
                 variable_summary(weights.name, weights)
                 variable_summary(biases.name, biases)
-                logits = tf.matmul(hidden1, weights) + biases
+                logits = tf.matmul(hidden2, weights) + biases
             return logits
         
         digits_logits = []
@@ -157,7 +166,7 @@ def main(argv):
     def train_graph(loss):
         with tf.name_scope('train'):
             tf.scalar_summary('total_loss', loss)
-            optimizer = tf.train.AdamOptimizer(1e-4, name='adam')
+            optimizer = tf.train.AdamOptimizer(1e-3, name='adam')
             train_op = optimizer.minimize(loss, name='minimize_loss')
         return train_op
 
@@ -243,7 +252,7 @@ def main(argv):
                 print "Step {}: Loss = {}, Batch accuracy = {}%".format(step, loss_value, batch_accuracy * 100.0)
                 summary_writer.add_summary(summary, step)
             
-            if step != 0 and step % 100 == 0:
+            if step != 0 and step % 200 == 0:
                 valid_accuracy = test_valid_eval(
                     sess, batch_eval, valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
                 print "Valid accuracy = {}%".format(valid_accuracy)
