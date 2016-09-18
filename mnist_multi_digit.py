@@ -113,7 +113,6 @@ def main(argv):
 
         with tf.name_scope('conv_fc_interface'):
             pool_flat = tf.reshape(pool_layer, [-1, reduced_height * reduced_width * last_conv_depth], name='flatten')
-            pool_flat_dropout = tf.nn.dropout(pool_flat, dropout_keep_prob, name='dropout')
 
         with tf.name_scope('hidden1'):
             weights = tf.Variable(tf.truncated_normal(
@@ -121,7 +120,7 @@ def main(argv):
             biases = tf.Variable(tf.zeros([HIDDEN_1_NODES]), name='biases')
             variable_summary(weights.name, weights)
             variable_summary(biases.name, biases)
-            hidden1 = tf.nn.relu(tf.matmul(pool_flat_dropout, weights) + biases, name='relu')
+            hidden1 = tf.nn.relu(tf.matmul(pool_flat, weights) + biases, name='relu')
             activation_summary(hidden1.name, hidden1)
             hidden1_drop = tf.nn.dropout(hidden1, dropout_keep_prob, name='dropout')
         
