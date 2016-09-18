@@ -119,11 +119,16 @@ def loss_graph(length_logits, digits_logits, label_length, label_digits):
         xentropy_mean = tf.reduce_mean(xentropy, name='xentropy_combined')
     return xentropy_mean
 
-def train_graph(loss):
+def train_graph(loss, global_step, decay_steps=2000, init_lr=1e-3, lr_decay_rate=0.9, constant_lr=True):
     with tf.name_scope('train'):
         tf.scalar_summary('total_loss', loss)
-        optimizer = tf.train.AdamOptimizer(1e-3, name='adam')
-        train_op = optimizer.minimize(loss, name='minimize_loss')
+        if not constant_lr:
+            learning_rate = tf.train.exponential_decay(init_lr, global_step, decay_steps, lr_decay_rate, staircase=True)
+        else:
+            learning_rate = init_lr
+        tf.scalar_summary('learning_rate', learning_rate)
+        optimizer = tf.train.AdamOptimizer(learning_rate, name='adam')
+        train_op = optimizer.minimize(loss, global_step=global_step, name='minimize_loss')
     return train_op
 
 def eval_graph(length_logits, digits_logits, labels_length, labels_digits):

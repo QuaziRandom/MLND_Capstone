@@ -15,6 +15,10 @@ IMAGE_HEIGHT = inputs.IMAGE_HEIGHT
 MAX_DIGITS = model.MAX_DIGITS
 DROPOUT_KEEP_PROB = 0.5
 
+LR_INIT_VALUE = 1e-2
+LR_DECAY_RATE = 0.5
+LR_DECAY_STEPS = 1000 # Roughly two epochs
+
 MAX_STEPS = 10000 + 1
 
 DEFAULT_LOG_DIR = 'logs/mnist_multi_digit'
@@ -60,10 +64,12 @@ def main(argv):
         masks_pl = tf.placeholder(tf.float32, [BATCH_SIZE, MAX_DIGITS])
         dropout_pl = tf.placeholder(tf.float32)
 
+        global_step = tf.Variable(0, trainable=False)
+
         conv_pool, num_conv_pool, last_conv_depth = model.conv_graph(images_pl)
         length_logits, digits_logits = model.fc_graph(conv_pool, num_conv_pool, last_conv_depth, masks_pl, dropout_pl)
         loss = model.loss_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
-        train_step = model.train_graph(loss)
+        train_step = model.train_graph(loss, global_step, LR_DECAY_STEPS, LR_INIT_VALUE, LR_DECAY_RATE, False)
         batch_eval = model.eval_graph(length_logits, digits_logits, length_labels_pl, digits_labels_pl)
 
         merged_summaries = tf.merge_all_summaries()
@@ -88,6 +94,7 @@ def main(argv):
             if start_step >= (MAX_STEPS - 1):
                 print "Model already trained to {} steps".format(MAX_STEPS - 1)
                 return
+            global_step.assign(start_step)
             print "Restoring from {} at step {}".format(ckpt.model_checkpoint_path, start_step)
         else:
             sess.run(tf.initialize_all_variables())
