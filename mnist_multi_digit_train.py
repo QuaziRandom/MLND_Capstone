@@ -15,11 +15,11 @@ IMAGE_HEIGHT = inputs.IMAGE_HEIGHT
 MAX_DIGITS = model.MAX_DIGITS
 DROPOUT_KEEP_PROB = 0.5
 
-LR_INIT_VALUE = 1e-2
-LR_DECAY_RATE = 0.5
+LR_INIT_VALUE = 8e-4
+LR_DECAY_RATE = 0.9
 LR_DECAY_STEPS = 1000 # Roughly two epochs
 
-MAX_STEPS = 10000 + 1
+MAX_STEPS = 15000 + 1
 
 DEFAULT_LOG_DIR = 'logs/mnist_multi_digit'
 DEFAULT_CP_DIR = 'checkpoints/mnist_multi_digit'

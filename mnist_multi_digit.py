@@ -39,7 +39,7 @@ def conv_graph(images):
         pool2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
         num_conv_pool += 1
     with tf.name_scope('conv3'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_2_DEPTH, CONV_3_DEPTH], stddev=1e-2), name='weights')
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_2_DEPTH, CONV_3_DEPTH], stddev=0.1), name='weights')
         biases = tf.Variable(tf.zeros([CONV_3_DEPTH]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -48,7 +48,7 @@ def conv_graph(images):
         pool3 = tf.nn.max_pool(conv3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
         num_conv_pool += 1
     with tf.name_scope('conv4'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_3_DEPTH, CONV_4_DEPTH], stddev=1e-2), name='weights')
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_3_DEPTH, CONV_4_DEPTH], stddev=5e-2), name='weights')
         biases = tf.Variable(tf.zeros([CONV_4_DEPTH]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
