@@ -233,6 +233,14 @@ def main(argv):
         merged_summaries = tf.merge_all_summaries()
         summary_writer = tf.train.SummaryWriter(log_dir, graph)
 
+        with tf.name_scope('accuracy_summary'):
+            batch_accuracy_pl = tf.placeholder(tf.float32)
+            batch_accuracy_summary = tf.scalar_summary('accuracy/batch', batch_accuracy_pl, collections='accuracies')
+            valid_accuracy_pl = tf.placeholder(tf.float32)
+            valid_accuracy_summary = tf.scalar_summary('accuracy/valid', valid_accuracy_pl, collection='accuracies')
+            test_accuracy_pl = tf.placeholder(tf.float32)
+            test_accuracy_summary = tf.scalar_summary('accuracy/test', test_accuracy_pl, collection='accuracies')
+
         saver = tf.train.Saver()
 
         sess = tf.Session()
@@ -258,17 +266,22 @@ def main(argv):
                 batch_accuracy, summary = sess.run([batch_eval, merged_summaries], feed_dict=feed_dict)
                 print "Step {}: Loss = {}, Batch accuracy = {}%".format(step, loss_value, batch_accuracy * 100.0)
                 summary_writer.add_summary(summary, step)
+                accuracy_summary = sess.run(batch_accuracy_summary, feed_dict={batch_accuracy_pl: batch_accuracy})
+                summary_writer.add_summary(accuracy_summary, step)
             
-            if step != 0 and step % 200 == 0:
+            if step != 0 and step % 500 == 0:
                 valid_accuracy = test_valid_eval(
                     sess, batch_eval, valid_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl, dropout_pl)
                 print "Valid accuracy = {}%".format(valid_accuracy)
-                # TODO: Write valid (and test) accuracy to summary somehow
+                accuracy_summary = sess.run(valid_accuracy_summary, feed_dict={valid_accuracy_pl: valid_accuracy})
+                summary_writer.add_summary(accuracy_summary, step)
             
             if step != 0 and step % 1000 == 0:
                 test_accuracy = test_valid_eval(
                     sess, batch_eval, test_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl, dropout_pl)
                 print "Test accuracy = {}%".format(test_accuracy)
+                accuracy_summary = sess.run(test_accuracy_summary, feed_dict={test_accuracy_pl: test_accuracy})
+                summary_writer.add_summary(accuracy_summary, step)
                 saver_path = saver.save(sess, os.path.join(cp_dir, 'model.ckpt'), global_step=step)
                 print "Model checkpoint created at {}".format(saver_path)
 
