@@ -41,6 +41,7 @@ class SVHNDigits(object):
             extra_mat = loadmat(EXTRA_LABEL_MAT)['digitStruct']
             train_portion = int(train_mat['name'][0].shape[0] * TRAIN_TO_TRAIN_EXTRA_RATIO)
             extra_portion = int(extra_mat['name'][0].shape[0] * TRAIN_TO_TRAIN_EXTRA_RATIO)
+            self._dataset_size = train_portion + extra_portion
             if type_data == 'train':
                 self._train_names = train_mat['name'][0][:train_portion]
                 self._train_bboxes = train_mat['bbox'][0][:train_portion]
@@ -61,6 +62,7 @@ class SVHNDigits(object):
             test_mat = loadmat(TEST_LABEL_MAT)['digitStruct']
             self._test_names = test_mat['name'][0]
             self._test_bboxes = test_mat['bbox'][0]
+            self._dataset_size = test_mat['name'][0].shape[0]
             self._test_index = 0
             self._working_mode = 0 # Sample only from test data
         else:
@@ -227,6 +229,9 @@ class SVHNDigits(object):
 
         return images, labels
 
+    def get_dataset_size(self):
+        return self._dataset_size
+        
     def get_batch_size(self):
         return self._batch_size
 
