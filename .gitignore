@@ -11,6 +11,9 @@ logs/mnist_multi_digit/
 checkpoints/mnist_single_digit/
 checkpoints/mnist_multi_digit/
 
+# Sandbox inside eval results
+eval/scratch/
+
 ####### Standard Python.gitignore ####### 
 # Byte-compiled / optimized / DLL files
 __pycache__/
