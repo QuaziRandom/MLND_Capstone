@@ -22,9 +22,9 @@ IMAGE_DEPTH = 3
 
 MAX_LEGAL_DIGITS = 5
 
-TRAIN_DIR = 'svhn/train/'
-EXTRA_DIR = 'svhn/extra/'
-TEST_DIR = 'svhn/test/'
+TRAIN_DIR = os.path.join(os.path.dirname(__file__),'svhn/train/')
+EXTRA_DIR = os.path.join(os.path.dirname(__file__),'svhn/extra/')
+TEST_DIR = os.path.join(os.path.dirname(__file__),'svhn/test/')
 LABEL_MAT_FILE = 'digitStructv7.mat'
 
 TRAIN_LABEL_MAT = os.path.join(TRAIN_DIR, LABEL_MAT_FILE)
