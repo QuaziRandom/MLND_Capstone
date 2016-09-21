@@ -11,6 +11,7 @@ CONV_3_DEPTH = 128
 CONV_4_DEPTH = 192
 HIDDEN_1_NODES = 4096
 HIDDEN_2_NODES = 2048
+HIDDEN_3_NODES = 1536
 LENGTH_LAYER_NODES = 6
 DIGIT_LAYER_NODES = 10
 MAX_DIGITS = 5
@@ -84,23 +85,32 @@ def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_k
         variable_summary(biases.name, biases)
         hidden2 = tf.nn.relu(tf.matmul(hidden1_drop, weights) + biases)
         activation_summary(hidden2.name, hidden2)
+        hidden2_drop = tf.nn.dropout(hidden2, dropout_keep_prob, name='dropout')
+
+    with tf.name_scope('hidden3'):
+        weights = tf.Variable(tf.truncated_normal([HIDDEN_2_NODES, HIDDEN_3_NODES], stddev=5e-3), name='weights')
+        biases = tf.Variable(tf.zeros([HIDDEN_3_NODES]), name='biases')
+        variable_summary(weights.name, weights)
+        variable_summary(biases.name, biases)
+        hidden3 = tf.nn.relu(tf.matmul(hidden2_drop, weights) + biases)
+        activation_summary(hidden3.name, hidden3)
     
     with tf.name_scope('readout_length'):
         weights = tf.Variable(
-            tf.truncated_normal([HIDDEN_2_NODES, LENGTH_LAYER_NODES], stddev=1e-1), name='weights')
+            tf.truncated_normal([HIDDEN_3_NODES, LENGTH_LAYER_NODES], stddev=1e-1), name='weights')
         biases = tf.Variable(tf.zeros([LENGTH_LAYER_NODES]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
-        length_logits = tf.matmul(hidden2, weights) + biases
+        length_logits = tf.matmul(hidden3, weights) + biases
 
     def readout_digit_graph(scope_name):
         with tf.name_scope(scope_name):
             weights = tf.Variable(
-                tf.truncated_normal([HIDDEN_2_NODES, DIGIT_LAYER_NODES], stddev=1e-1), name='weights')
+                tf.truncated_normal([HIDDEN_3_NODES, DIGIT_LAYER_NODES], stddev=1e-1), name='weights')
             biases = tf.Variable(tf.zeros([DIGIT_LAYER_NODES]), name='biases')
             variable_summary(weights.name, weights)
             variable_summary(biases.name, biases)
-            logits = tf.matmul(hidden2, weights) + biases
+            logits = tf.matmul(hidden3, weights) + biases
         return logits
     
     digits_logits = []
