@@ -31,27 +31,34 @@ TRAIN_LABEL_MAT = os.path.join(TRAIN_DIR, LABEL_MAT_FILE)
 EXTRA_LABEL_MAT = os.path.join(EXTRA_DIR, LABEL_MAT_FILE)
 TEST_LABEL_MAT = os.path.join(TEST_DIR, LABEL_MAT_FILE)
 
-VALID_TO_TRAIN_EXTRA_RATIO = 0.1                            # 10%
-TRAIN_TO_TRAIN_EXTRA_RATIO = 1 - VALID_TO_TRAIN_EXTRA_RATIO # 90%
+VALID_TO_TRAIN_EXTRA_RATIO = 0.05                           # 5%
+TRAIN_TO_TRAIN_EXTRA_RATIO = 1 - VALID_TO_TRAIN_EXTRA_RATIO # 95%
+
+# This constant limits the number of train images being loaded.
+# For some reasons unknown tensorflow messes up some variables
+# if all (the last bits) of the training data is considered.
+TRAIN_DATASET_LIMIT = 25000
 
 class SVHNDigits(object):
     def __init__(self, type_data, random_state=101010, batch_size=128, buffer_size=128, num_threads=8):
         if type_data == 'train' or type_data == 'valid':
-            train_mat = loadmat(TRAIN_LABEL_MAT)['digitStruct']
+            train_mat = loadmat(TRAIN_LABEL_MAT)['digitStruct'][:, :TRAIN_DATASET_LIMIT]
             extra_mat = loadmat(EXTRA_LABEL_MAT)['digitStruct']
             train_portion = int(train_mat['name'][0].shape[0] * TRAIN_TO_TRAIN_EXTRA_RATIO)
             extra_portion = int(extra_mat['name'][0].shape[0] * TRAIN_TO_TRAIN_EXTRA_RATIO)
-            self._dataset_size = train_portion + extra_portion
+            total_train_size = train_portion + extra_portion
             if type_data == 'train':
                 self._train_names = train_mat['name'][0][:train_portion]
                 self._train_bboxes = train_mat['bbox'][0][:train_portion]
                 self._extra_names = extra_mat['name'][0][:extra_portion]
                 self._extra_bboxes = extra_mat['bbox'][0][:extra_portion]
+                self._dataset_size = total_train_size
             else:
                 self._train_names = train_mat['name'][0][train_portion:]
                 self._train_bboxes = train_mat['bbox'][0][train_portion:]
                 self._extra_names = extra_mat['name'][0][extra_portion:]
                 self._extra_bboxes = extra_mat['bbox'][0][extra_portion:]
+                self._dataset_size = (train_mat['name'][0].shape[0] + extra_mat['name'][0].shape[0]) - total_train_size
             self._train_index = 0
             self._extra_index = 0
             self._train_to_whole_ratio = float(self._train_names.shape[0]) / float(self._extra_names.shape[0] + self._train_names.shape[0])
@@ -224,7 +231,7 @@ class SVHNDigits(object):
             labels[count] = (label_string, label_length, label_digits, label_mask)
             count += 1
         
-        # Perform a simple normailzation
+        # Perform a simple normalization
         images = (images / 255.0) - 0.5
 
         return images, labels
