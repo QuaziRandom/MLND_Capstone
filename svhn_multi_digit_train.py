@@ -104,10 +104,19 @@ def main(argv):
             sess.run(tf.initialize_all_variables())
             start_step = 0
 
+        if args.debug:
+            # Add an op that raises assertion if any op in the graph returns inf or nan
+            check_numerics = tf.add_check_numerics_ops()
+
         for step in xrange(start_step, MAX_STEPS):
             feed_dict = inputs.generate_feed_dict(train_data, images_pl, length_labels_pl, digits_labels_pl, masks_pl)
             feed_dict[dropout_pl] = DROPOUT_KEEP_PROB
-            _, loss_value = sess.run([train_step, loss], feed_dict=feed_dict)
+            
+            if args.debug:
+                _, loss_value, check = sess.run([train_step, loss, check_numerics], feed_dict=feed_dict)
+                print step, check
+            else:
+                _, loss_value = sess.run([train_step, loss], feed_dict=feed_dict)
 
             if step % 50 == 0:
                 batch_accuracy, summary = sess.run([batch_eval, merged_summaries], feed_dict=feed_dict)
