@@ -7,11 +7,10 @@ from helpers import variable_summary, activation_summary
 # Global constants
 CONV_1_DEPTH = 48
 CONV_2_DEPTH = 64
-CONV_3_DEPTH = 96
-CONV_4_DEPTH = 128
-CONV_5_DEPTH = 160
-HIDDEN_1_NODES = 2048
-HIDDEN_2_NODES = 1024
+CONV_3_DEPTH = 128
+CONV_4_DEPTH = 192
+HIDDEN_1_NODES = 4096
+HIDDEN_2_NODES = 2048
 LENGTH_LAYER_NODES = 6
 DIGIT_LAYER_NODES = 10
 MAX_DIGITS = 5
@@ -58,17 +57,8 @@ def conv_graph(images):
         activation_summary(conv4.name, conv4)
         pool4 = tf.nn.max_pool(conv4, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
         num_conv_pool += 1
-    with tf.name_scope('conv5'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_4_DEPTH, CONV_5_DEPTH], stddev=0.01), name='weights')
-        biases = tf.Variable(tf.zeros([CONV_5_DEPTH]), name='biases')
-        variable_summary(weights.name, weights)
-        variable_summary(biases.name, biases)
-        conv5 = tf.nn.relu(tf.nn.conv2d(pool4, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
-        activation_summary(conv5.name, conv5)
-        pool5 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
-        num_conv_pool += 1
     
-    return pool5, num_conv_pool, CONV_5_DEPTH
+    return pool4, num_conv_pool, CONV_4_DEPTH
 
 def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_keep_prob):
     reduced_height = IMAGE_HEIGHT // (2**num_conv_pool_layers)
@@ -79,7 +69,7 @@ def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_k
 
     with tf.name_scope('hidden1'):
         weights = tf.Variable(tf.truncated_normal(
-            [reduced_height * reduced_width * last_conv_depth, HIDDEN_1_NODES], stddev=1e-3), name='weights')
+            [reduced_height * reduced_width * last_conv_depth, HIDDEN_1_NODES], stddev=5e-4), name='weights')
         biases = tf.Variable(tf.zeros([HIDDEN_1_NODES]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
