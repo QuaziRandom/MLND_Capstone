@@ -39,11 +39,15 @@ TRAIN_TO_TRAIN_EXTRA_RATIO = 1 - VALID_TO_TRAIN_EXTRA_RATIO # 95%
 # if all (the last bits) of the training data is considered.
 TRAIN_DATASET_LIMIT = 25000
 
+# Extra dataset limit to be used in part 2. Refer to 
+# svhn_multi_digit_train.py for more details about training phases.
+EXTRA_DATASET_LIMIT = 5000 
+
 class SVHNDigits(object):
     def __init__(self, type_data, random_state=101010, batch_size=128, buffer_size=128, num_threads=8):
         if type_data == 'train' or type_data == 'valid':
             train_mat = loadmat(TRAIN_LABEL_MAT)['digitStruct'][:, :TRAIN_DATASET_LIMIT]
-            extra_mat = loadmat(EXTRA_LABEL_MAT)['digitStruct']
+            extra_mat = loadmat(EXTRA_LABEL_MAT)['digitStruct'] # [:, :EXTRA_DATASET_LIMIT] # part 2
             train_portion = int(train_mat['name'][0].shape[0] * TRAIN_TO_TRAIN_EXTRA_RATIO)
             extra_portion = int(extra_mat['name'][0].shape[0] * TRAIN_TO_TRAIN_EXTRA_RATIO)
             total_train_size = train_portion + extra_portion

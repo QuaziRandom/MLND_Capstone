@@ -16,11 +16,24 @@ IMAGE_DEPTH = inputs.IMAGE_DEPTH
 MAX_DIGITS = model.MAX_DIGITS
 DROPOUT_KEEP_PROB = 0.5
 
-LR_INIT_VALUE = 8e-4
+# Exponential decay not used in final model.
+# Retaining this for generality
 LR_DECAY_RATE = 0.9
 LR_DECAY_STEPS = 3000 # Roughly two epochs
 
-MAX_STEPS = 30000 + 1
+# Final model has training in two phases;
+# The initial run uses all "train" and "extra"
+# data, while the subsequent phase concentrates
+# more on "train" data. Comment/uncomment below constants
+# appropriately.
+
+# Part 1
+LR_INIT_VALUE = 1e-4
+MAX_STEPS = 13000 + 1
+
+# Part 2
+# LR_INIT_VALUE = 4e-5
+# MAX_STEPS = 15000 + 1
 
 DEFAULT_LOG_DIR = 'logs/svhn_multi_digit'
 DEFAULT_CP_DIR = 'checkpoints/svhn_multi_digit'
