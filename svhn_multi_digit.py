@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 import svhn_multi_digit_input as inputs
 
@@ -20,10 +21,14 @@ IMAGE_WIDTH = inputs.IMAGE_WIDTH
 IMAGE_HEIGHT = inputs.IMAGE_HEIGHT
 IMAGE_DEPTH = inputs.IMAGE_DEPTH
 
+def he_init_std(n):
+    return np.sqrt(2.0/n)
+
 def conv_graph(images):
     num_conv_pool = 0
     with tf.name_scope('conv1'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, IMAGE_DEPTH, CONV_1_DEPTH], stddev=0.1), name='weights')
+        init_std = he_init_std(5 * 5 * IMAGE_DEPTH)
+        weights = tf.Variable(tf.truncated_normal([5, 5, IMAGE_DEPTH, CONV_1_DEPTH], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([CONV_1_DEPTH]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -32,7 +37,8 @@ def conv_graph(images):
         pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
         num_conv_pool += 1
     with tf.name_scope('conv2'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_1_DEPTH, CONV_2_DEPTH], stddev=0.05), name='weights')
+        init_std = he_init_std(5 * 5 * CONV_1_DEPTH)
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_1_DEPTH, CONV_2_DEPTH], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([CONV_2_DEPTH]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -41,7 +47,8 @@ def conv_graph(images):
         pool2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
         num_conv_pool += 1
     with tf.name_scope('conv3'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_2_DEPTH, CONV_3_DEPTH], stddev=0.05), name='weights')
+        init_std = he_init_std(5 * 5 * CONV_2_DEPTH)
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_2_DEPTH, CONV_3_DEPTH], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([CONV_3_DEPTH]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -50,7 +57,8 @@ def conv_graph(images):
         pool3 = tf.nn.max_pool(conv3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
         num_conv_pool += 1
     with tf.name_scope('conv4'):
-        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_3_DEPTH, CONV_4_DEPTH], stddev=0.01), name='weights')
+        init_std = he_init_std(5 * 5 * CONV_3_DEPTH)
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_3_DEPTH, CONV_4_DEPTH], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([CONV_4_DEPTH]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -69,8 +77,9 @@ def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_k
         pool_flat = tf.reshape(pool_layer, [-1, reduced_height * reduced_width * last_conv_depth], name='flatten')
 
     with tf.name_scope('hidden1'):
+        init_std = he_init_std(reduced_height * reduced_width * last_conv_depth)
         weights = tf.Variable(tf.truncated_normal(
-            [reduced_height * reduced_width * last_conv_depth, HIDDEN_1_NODES], stddev=5e-4), name='weights')
+            [reduced_height * reduced_width * last_conv_depth, HIDDEN_1_NODES], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([HIDDEN_1_NODES]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -79,7 +88,8 @@ def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_k
         hidden1_drop = tf.nn.dropout(hidden1, dropout_keep_prob, name='dropout')
     
     with tf.name_scope('hidden2'):
-        weights = tf.Variable(tf.truncated_normal([HIDDEN_1_NODES, HIDDEN_2_NODES], stddev=1e-3), name='weights')
+        init_std = he_init_std(HIDDEN_1_NODES)
+        weights = tf.Variable(tf.truncated_normal([HIDDEN_1_NODES, HIDDEN_2_NODES], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([HIDDEN_2_NODES]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
@@ -88,7 +98,8 @@ def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_k
         hidden2_drop = tf.nn.dropout(hidden2, dropout_keep_prob, name='dropout')
 
     with tf.name_scope('hidden3'):
-        weights = tf.Variable(tf.truncated_normal([HIDDEN_2_NODES, HIDDEN_3_NODES], stddev=5e-3), name='weights')
+        init_std = he_init_std(HIDDEN_2_NODES)
+        weights = tf.Variable(tf.truncated_normal([HIDDEN_2_NODES, HIDDEN_3_NODES], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([HIDDEN_3_NODES]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
