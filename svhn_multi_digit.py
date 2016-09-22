@@ -8,8 +8,10 @@ from helpers import variable_summary, activation_summary
 # Global constants
 CONV_1_DEPTH = 48
 CONV_2_DEPTH = 64
-CONV_3_DEPTH = 128
-CONV_4_DEPTH = 192
+CONV_3_DEPTH = 96
+CONV_4_DEPTH = 128
+CONV_5_DEPTH = 160
+CONV_6_DEPTH = 160
 HIDDEN_1_NODES = 4096
 HIDDEN_2_NODES = 2048
 HIDDEN_3_NODES = 1536
@@ -25,7 +27,7 @@ def he_init_std(n):
     return np.sqrt(2.0/n)
 
 def conv_graph(images):
-    num_conv_pool = 0
+    num_stride_two_pool = 0
     with tf.name_scope('conv1'):
         init_std = he_init_std(5 * 5 * IMAGE_DEPTH)
         weights = tf.Variable(tf.truncated_normal([5, 5, IMAGE_DEPTH, CONV_1_DEPTH], stddev=init_std), name='weights')
@@ -34,8 +36,7 @@ def conv_graph(images):
         variable_summary(biases.name, biases)
         conv1 = tf.nn.relu(tf.nn.conv2d(images, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
         activation_summary(conv1.name, conv1)
-        pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
-        num_conv_pool += 1
+        pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], strides=[1, 1, 1, 1], padding='SAME', name='pool')
     with tf.name_scope('conv2'):
         init_std = he_init_std(5 * 5 * CONV_1_DEPTH)
         weights = tf.Variable(tf.truncated_normal([5, 5, CONV_1_DEPTH, CONV_2_DEPTH], stddev=init_std), name='weights')
@@ -45,7 +46,7 @@ def conv_graph(images):
         conv2 = tf.nn.relu(tf.nn.conv2d(pool1, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
         activation_summary(conv2.name, conv2)
         pool2 = tf.nn.max_pool(conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
-        num_conv_pool += 1
+        num_stride_two_pool += 1
     with tf.name_scope('conv3'):
         init_std = he_init_std(5 * 5 * CONV_2_DEPTH)
         weights = tf.Variable(tf.truncated_normal([5, 5, CONV_2_DEPTH, CONV_3_DEPTH], stddev=init_std), name='weights')
@@ -54,8 +55,7 @@ def conv_graph(images):
         variable_summary(biases.name, biases)
         conv3 = tf.nn.relu(tf.nn.conv2d(pool2, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
         activation_summary(conv3.name, conv3)
-        pool3 = tf.nn.max_pool(conv3, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
-        num_conv_pool += 1
+        pool3 = tf.nn.max_pool(conv3, ksize=[1, 2, 2, 1], strides=[1, 1, 1, 1], padding='SAME', name='pool')
     with tf.name_scope('conv4'):
         init_std = he_init_std(5 * 5 * CONV_3_DEPTH)
         weights = tf.Variable(tf.truncated_normal([5, 5, CONV_3_DEPTH, CONV_4_DEPTH], stddev=init_std), name='weights')
@@ -65,13 +65,33 @@ def conv_graph(images):
         conv4 = tf.nn.relu(tf.nn.conv2d(pool3, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
         activation_summary(conv4.name, conv4)
         pool4 = tf.nn.max_pool(conv4, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
-        num_conv_pool += 1
+        num_stride_two_pool += 1
+    with tf.name_scope('conv5'):
+        init_std = he_init_std(5 * 5 * CONV_4_DEPTH)
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_4_DEPTH, CONV_5_DEPTH], stddev=init_std), name='weights')
+        biases = tf.Variable(tf.zeros([CONV_5_DEPTH]), name='biases')
+        variable_summary(weights.name, weights)
+        variable_summary(biases.name, biases)
+        conv5 = tf.nn.relu(tf.nn.conv2d(pool4, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
+        activation_summary(conv5.name, conv5)
+        pool5 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
+        num_stride_two_pool += 1
+    with tf.name_scope('conv6'):
+        init_std = he_init_std(5 * 5 * CONV_5_DEPTH)
+        weights = tf.Variable(tf.truncated_normal([5, 5, CONV_5_DEPTH, CONV_6_DEPTH], stddev=init_std), name='weights')
+        biases = tf.Variable(tf.zeros([CONV_6_DEPTH]), name='biases')
+        variable_summary(weights.name, weights)
+        variable_summary(biases.name, biases)
+        conv6 = tf.nn.relu(tf.nn.conv2d(pool5, weights, strides=[1, 1, 1, 1], padding='SAME', name='conv') + biases, name='relu')
+        activation_summary(conv6.name, conv6)
+        pool6 = tf.nn.max_pool(conv6, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME', name='pool')
+        num_stride_two_pool += 1
     
-    return pool4, num_conv_pool, CONV_4_DEPTH
+    return pool6, num_stride_two_pool, CONV_6_DEPTH
 
-def fc_graph(pool_layer, num_conv_pool_layers, last_conv_depth, masks, dropout_keep_prob):
-    reduced_height = IMAGE_HEIGHT // (2**num_conv_pool_layers)
-    reduced_width = IMAGE_WIDTH // (2**num_conv_pool_layers)
+def fc_graph(pool_layer, num_stride_two_pool_layers, last_conv_depth, masks, dropout_keep_prob):
+    reduced_height = IMAGE_HEIGHT // (2**num_stride_two_pool_layers)
+    reduced_width = IMAGE_WIDTH // (2**num_stride_two_pool_layers)
 
     with tf.name_scope('conv_fc_interface'):
         pool_flat = tf.reshape(pool_layer, [-1, reduced_height * reduced_width * last_conv_depth], name='flatten')
