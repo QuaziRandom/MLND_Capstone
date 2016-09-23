@@ -67,7 +67,6 @@ def main(argv):
         global_step = tf.Variable(0, trainable=False)
 
         conv_pool, num_conv_pool, last_conv_depth = model.conv_graph(images_pl)
-        print conv_pool.get_shape()
         logits = model.fc_graph(conv_pool, num_conv_pool, last_conv_depth, dropout_pl)
         loss = model.loss_graph(logits, bboxes_pl)
         train_step = model.train_graph(loss, global_step, init_lr=LR_INIT_VALUE)
@@ -137,9 +136,9 @@ def main(argv):
                     loss_summary = sess.run(valid_loss_summary, feed_dict={valid_loss_pl: valid_avg_loss})
                     summary_writer.add_summary(loss_summary, step)
             
-            if step != 0 and step % 1000 == 0:
+            if step != 0 and step % 2000 == 0:
                 test_avg_loss = test_valid_eval(sess, loss, test_data, images_pl, bboxes_pl, dropout_pl)
-                print "Test average loss = {}%".format(test_loss)
+                print "Test average loss = {}%".format(test_avg_loss)
                 loss_summary = sess.run(test_loss_summary, feed_dict={test_loss_pl: test_loss})
                 summary_writer.add_summary(loss_summary, step)
 

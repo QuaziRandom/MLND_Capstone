@@ -6,18 +6,18 @@ from dataset.load_svhn_region import SVHNRegion
 IMAGE_WIDTH = 320
 IMAGE_HEIGHT = 160
 IMAGE_DEPTH = 3
-BATCH_SIZE = 128
+BATCH_SIZE = 32
 
 def load_svhn_datasets(valid_dataset_needed=False, train_dataset_needed=True):
     if train_dataset_needed:
-        train_data = SVHNRegion('train', batch_size=BATCH_SIZE)
+        train_data = SVHNRegion('train', batch_size=BATCH_SIZE, buffer_size=8)
     else:
         train_data = 0
     if valid_dataset_needed:
-        valid_data = SVHNRegion('valid', batch_size=BATCH_SIZE)
+        valid_data = SVHNRegion('valid', batch_size=BATCH_SIZE, buffer_size=8)
     else:
         valid_data = 0
-    test_data = SVHNRegion('test', batch_size=BATCH_SIZE)
+    test_data = SVHNRegion('test', batch_size=BATCH_SIZE, buffer_size=8)
 
     return train_data, valid_data, test_data
 
