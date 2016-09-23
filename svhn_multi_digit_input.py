@@ -8,13 +8,16 @@ IMAGE_HEIGHT = 64
 IMAGE_DEPTH = 3
 BATCH_SIZE = 128
 
-def load_svhn_datasets(valid_dataset_needed=False):
-    train_data = SVHNDigits('train')
+def load_svhn_datasets(valid_dataset_needed=False, train_dataset_needed=True):
+    if train_dataset_needed:
+        train_data = SVHNDigits('train', batch_size=BATCH_SIZE)
+    else:
+        train_data = 0
     if valid_dataset_needed:
-        valid_data = SVHNDigits('valid')
+        valid_data = SVHNDigits('valid', batch_size=BATCH_SIZE)
     else:
         valid_data = 0
-    test_data = SVHNDigits('test')
+    test_data = SVHNDigits('test', batch_size=BATCH_SIZE)
 
     return train_data, valid_data, test_data
 
