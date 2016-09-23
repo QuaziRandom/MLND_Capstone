@@ -7,11 +7,13 @@ dataset/svhn/
 logs/mnist_single_digit/
 logs/mnist_multi_digit/
 logs/svhn_multi_digit/
+logs/svhn_region/
 
 # Model checkpoints
 checkpoints/mnist_single_digit/
 checkpoints/mnist_multi_digit/
 checkpoints/svhn_multi_digit/
+logs/svhn_region/
 
 # Sandbox inside eval results
 eval/scratch/
