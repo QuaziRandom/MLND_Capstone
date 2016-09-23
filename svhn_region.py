@@ -14,7 +14,7 @@ CONV_4_DEPTH = digits_model.CONV_4_DEPTH
 CONV_5_DEPTH = digits_model.CONV_5_DEPTH
 CONV_6_DEPTH = digits_model.CONV_6_DEPTH
 HIDDEN_1_NODES = 2048
-#HIDDEN_2_NODES = 1024
+HIDDEN_2_NODES = 1024
 BBOX_LAYER_NODES = 4
 
 IMAGE_WIDTH = inputs.IMAGE_WIDTH
@@ -44,14 +44,23 @@ def fc_graph(pool_layer, num_stride_two_pool_layers, last_conv_depth, dropout_ke
         hidden1 = tf.nn.relu(tf.matmul(pool_flat, weights) + biases, name='relu')
         activation_summary(hidden1.name, hidden1)
         hidden1_drop = tf.nn.dropout(hidden1, dropout_keep_prob, name='dropout')
+
+    with tf.name_scope('hidden2'):
+        init_std = he_init_std(HIDDEN_1_NODES)
+        weights = tf.Variable(tf.truncated_normal([HIDDEN_1_NODES, HIDDEN_2_NODES], stddev=init_std), name='weights')
+        biases = tf.Variable(tf.zeros([HIDDEN_2_NODES]), name='biases')
+        variable_summary(weights.name, weights)
+        variable_summary(biases.name, biases)
+        hidden2 = tf.nn.relu(tf.matmul(hidden1_drop, weights) + biases)
+        activation_summary(hidden2.name, hidden2)
     
     with tf.name_scope('bbox_output'):
-        init_std = he_init_std(HIDDEN_1_NODES)
-        weights = tf.Variable(tf.truncated_normal([HIDDEN_1_NODES, BBOX_LAYER_NODES], stddev=init_std), name='weights')
+        init_std = he_init_std(HIDDEN_2_NODES)
+        weights = tf.Variable(tf.truncated_normal([HIDDEN_2_NODES, BBOX_LAYER_NODES], stddev=init_std), name='weights')
         biases = tf.Variable(tf.zeros([BBOX_LAYER_NODES]), name='biases')
         variable_summary(weights.name, weights)
         variable_summary(biases.name, biases)
-        logits = tf.matmul(hidden1_drop, weights) + biases
+        logits = tf.matmul(hidden2, weights) + biases
     
     return logits
 

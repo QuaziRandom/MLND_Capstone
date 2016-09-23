@@ -15,7 +15,7 @@ IMAGE_HEIGHT = inputs.IMAGE_HEIGHT
 IMAGE_DEPTH = inputs.IMAGE_DEPTH
 DROPOUT_KEEP_PROB = 0.5
 
-LR_INIT_VALUE = 1e-4
+LR_INIT_VALUE = 1e-3
 MAX_STEPS = 13000 + 1
 
 DEFAULT_LOG_DIR = 'logs/svhn_region'
@@ -139,7 +139,7 @@ def main(argv):
             if step != 0 and step % 2000 == 0:
                 test_avg_loss = test_valid_eval(sess, loss, test_data, images_pl, bboxes_pl, dropout_pl)
                 print "Test average loss = {}%".format(test_avg_loss)
-                loss_summary = sess.run(test_loss_summary, feed_dict={test_loss_pl: test_loss})
+                loss_summary = sess.run(test_loss_summary, feed_dict={test_loss_pl: test_avg_loss})
                 summary_writer.add_summary(loss_summary, step)
 
                 saver_path = default_saver.save(sess, os.path.join(cp_dir, 'model.ckpt'), global_step=step)
