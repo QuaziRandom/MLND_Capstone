@@ -3,8 +3,8 @@ import tensorflow as tf
 from dataset.load_svhn_region import SVHNRegion
 
 # Global constants
-IMAGE_WIDTH = 320
-IMAGE_HEIGHT = 160
+IMAGE_WIDTH = 160
+IMAGE_HEIGHT = 80
 IMAGE_DEPTH = 3
 BATCH_SIZE = 32
 

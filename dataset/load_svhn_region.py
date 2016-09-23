@@ -21,8 +21,8 @@ TEST_LABEL_MAT = os.path.join(TEST_DIR, LABEL_MAT_FILE)
 
 BBOX_EXPAND_RATIO = 0.3 # 30%
 
-FINAL_IMAGE_HEIGHT = 160
-FINAL_IMAGE_WIDTH = 320
+FINAL_IMAGE_HEIGHT = 80
+FINAL_IMAGE_WIDTH = 160
 IMAGE_DEPTH = 3
 
 # This constant limits the number of train images being loaded.
