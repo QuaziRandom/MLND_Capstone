@@ -21,7 +21,7 @@ TEST_LABEL_MAT = os.path.join(TEST_DIR, LABEL_MAT_FILE)
 
 BBOX_EXPAND_RATIO = 0.3 # 30%
 
-FINAL_IMAGE_HEIGHT = 180
+FINAL_IMAGE_HEIGHT = 160
 FINAL_IMAGE_WIDTH = 320
 IMAGE_DEPTH = 3
 
@@ -34,7 +34,7 @@ VALID_RATIO = 0.1             # 10%
 TRAIN_RATIO = 1 - VALID_RATIO # 90%
 
 class SVHNRegion(object):
-    def __init__(self, type_data, random_state=101010, batch_size=128, buffer_size=64, num_threads=4):
+    def __init__(self, type_data, random_state=101010, batch_size=128, buffer_size=32, num_threads=4):
         if type_data == 'train' or type_data == 'valid':
             train_mat = loadmat(TRAIN_LABEL_MAT)['digitStruct'][:, :TRAIN_DATASET_LIMIT]
             train_portion = int(train_mat['name'][0].shape[0] * TRAIN_RATIO)
