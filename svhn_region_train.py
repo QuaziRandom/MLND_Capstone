@@ -132,13 +132,13 @@ def main(argv):
             if need_validation:
                 if step != 0 and step % 500 == 0:
                     valid_avg_loss = test_valid_eval(sess, loss, valid_data, images_pl, bboxes_pl, dropout_pl)
-                    print "Valid average loss = {}%".format(valid_avg_loss)
+                    print "Valid average loss = {}".format(valid_avg_loss)
                     loss_summary = sess.run(valid_loss_summary, feed_dict={valid_loss_pl: valid_avg_loss})
                     summary_writer.add_summary(loss_summary, step)
             
             if step != 0 and step % 2000 == 0:
                 test_avg_loss = test_valid_eval(sess, loss, test_data, images_pl, bboxes_pl, dropout_pl)
-                print "Test average loss = {}%".format(test_avg_loss)
+                print "Test average loss = {}".format(test_avg_loss)
                 loss_summary = sess.run(test_loss_summary, feed_dict={test_loss_pl: test_avg_loss})
                 summary_writer.add_summary(loss_summary, step)
 
