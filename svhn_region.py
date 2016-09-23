@@ -65,7 +65,10 @@ def fc_graph(pool_layer, num_stride_two_pool_layers, last_conv_depth, dropout_ke
     return logits
 
 def loss_graph(logits, bboxes):
-    loss = tf.nn.l2_loss(logits - bboxes)
+    with tf.name_scope('l2_loss'):
+        squared_difference = tf.squared_difference(logits, bboxes)
+        distance = tf.reduce_sum(squared_difference, 1)
+        loss = tf.reduce_mean(distance)
     return loss
 
 def train_graph(loss, global_step, decay_steps=2000, init_lr=1e-4, lr_decay_rate=0.9, constant_lr=True):
