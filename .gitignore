@@ -13,7 +13,7 @@ logs/svhn_region/
 checkpoints/mnist_single_digit/
 checkpoints/mnist_multi_digit/
 checkpoints/svhn_multi_digit/
-logs/svhn_region/
+checkpoints/svhn_region/
 
 # Sandbox inside eval results
 eval/scratch/
