@@ -67,7 +67,9 @@ def fc_graph(pool_layer, num_stride_two_pool_layers, last_conv_depth, dropout_ke
 def loss_graph(logits, bboxes):
     with tf.name_scope('l2_loss'):
         squared_difference = tf.squared_difference(logits, bboxes)
-        distance = tf.reduce_sum(squared_difference, 1)
+        bbox_weights = tf.constant([2, 2, 1, 1], tf.float32)
+        weighted_difference = tf.mul(squared_difference, bbox_weights)
+        distance = tf.reduce_sum(weighted_difference, 1)
         loss = tf.reduce_mean(distance)
     return loss
 
