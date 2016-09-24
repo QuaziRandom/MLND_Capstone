@@ -7,6 +7,7 @@
         "**/.DS_Store": true,
         "dataset/svhn/train/": true,
         "dataset/svhn/extra/": true,
-        "dataset/svhn/test/": true
+        "dataset/svhn/test/": true,
+        "**/*.pyc": true
     }
 }
