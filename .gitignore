@@ -15,6 +15,12 @@ checkpoints/mnist_multi_digit/
 checkpoints/svhn_multi_digit/
 checkpoints/svhn_region/
 
+# Saved models (Links to compressed model files will replace this)
+saved_models/mnist_single_digit/
+saved_models/mnist_multi_digit/
+saved_models/svhn_multi_digit/
+saved_models/svhn_region/
+
 # Sandbox inside eval results
 eval/scratch/
 
