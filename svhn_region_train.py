@@ -15,13 +15,18 @@ IMAGE_HEIGHT = inputs.IMAGE_HEIGHT
 IMAGE_DEPTH = inputs.IMAGE_DEPTH
 DROPOUT_KEEP_PROB = 0.5
 
-LR_INIT_VALUE = 1e-3
-MAX_STEPS = 13000 + 1
+# Part 1 - Train data
+LR_INIT_VALUE = 1e-4
+MAX_STEPS = 3000 + 1
+
+# Part 2 - Test data (Refer to doc for more info)
+# LR_INIT_VALUE = 2e-5
+# MAX_STEPS = 6000 + 1
 
 DEFAULT_LOG_DIR = 'logs/svhn_region'
 DEFAULT_CP_DIR = 'checkpoints/svhn_region'
 
-TRAINED_CONV_CP_DIR = 'checkpoints/svhn_multi_digit/final_part_2'
+TRAINED_CONV_CP_DIR = 'saved_models/svhn_multi_digit/'
 
 def test_valid_eval(sess, loss, test_valid_data, images_pl, bboxes_pl, dropout_pl):
     num_batches = test_valid_data.get_dataset_size() // BATCH_SIZE
@@ -136,7 +141,7 @@ def main(argv):
                     loss_summary = sess.run(valid_loss_summary, feed_dict={valid_loss_pl: valid_avg_loss})
                     summary_writer.add_summary(loss_summary, step)
             
-            if step != 0 and step % 2000 == 0:
+            if step != 0 and step % 1000 == 0:
                 test_avg_loss = test_valid_eval(sess, loss, test_data, images_pl, bboxes_pl, dropout_pl)
                 print "Test average loss = {}".format(test_avg_loss)
                 loss_summary = sess.run(test_loss_summary, feed_dict={test_loss_pl: test_avg_loss})
