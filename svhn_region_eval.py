@@ -12,7 +12,7 @@ IMAGE_WIDTH = inputs.IMAGE_WIDTH
 IMAGE_HEIGHT = inputs.IMAGE_HEIGHT
 IMAGE_DEPTH = inputs.IMAGE_DEPTH
 
-cp_dir = 'checkpoints/svhn_region/fixed_loss_default'
+cp_dir = 'saved_models/svhn_region/'
 
 def main(argv):
     _, _, test_data = inputs.load_svhn_datasets(valid_dataset_needed=False, train_dataset_needed=False)
@@ -35,7 +35,7 @@ def main(argv):
             print "Valid checkpoint not found at {}".format(cp_dir)
             return
 
-        for _ in range(2): # Some steps
+        for _ in range(2): # Few batches
             feed_dict = inputs.generate_feed_dict(test_data, images_pl, bboxes_pl)
             feed_dict[dropout_pl] = 1.0
 
