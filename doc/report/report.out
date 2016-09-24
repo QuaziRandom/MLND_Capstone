@@ -1,0 +1,14 @@
+\BOOKMARK [1][-]{section.1}{Project Overview}{}% 1
+\BOOKMARK [1][-]{section.2}{Problem Statement}{}% 2
+\BOOKMARK [1][-]{section.3}{Metrics}{}% 3
+\BOOKMARK [1][-]{section.4}{Datasets}{}% 4
+\BOOKMARK [1][-]{section.5}{Detection}{}% 5
+\BOOKMARK [2][-]{subsection.5.1}{Basic model}{section.5}% 6
+\BOOKMARK [2][-]{subsection.5.2}{MNIST multi-digit detection}{section.5}% 7
+\BOOKMARK [2][-]{subsection.5.3}{SVHN detection}{section.5}% 8
+\BOOKMARK [1][-]{section.6}{Localization}{}% 9
+\BOOKMARK [1][-]{section.7}{Combined model}{}% 10
+\BOOKMARK [2][-]{subsection.7.1}{Google Street View images}{section.7}% 11
+\BOOKMARK [1][-]{section.8}{Hyperparameter tuning process}{}% 12
+\BOOKMARK [1][-]{section.9}{Conclusion and Improvements}{}% 13
+\BOOKMARK [1][-]{section.10}{Reflections and Acknowledgments}{}% 14

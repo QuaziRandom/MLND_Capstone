@@ -1,0 +1,92 @@
+\begin{thebibliography}{10}
+
+\bibitem{news-wrong-address-delivery}
+``Amazon sends me someone else’s order. {W}hy don’t they care if {I} send
+  it back?.''
+  \url{https://consumerist.com/2015/12/02/amazon-sends-me-someone-elses-order-why-dont-they-care-if-i-send-it-back/}.
+\newblock Accessed: 2016-09-17.
+
+\bibitem{svhn-dataset}
+``The street view house numbers ({SVHN}) dataset.''
+  \url{http://ufldl.stanford.edu/housenumbers/}.
+\newblock Accessed: 2016-09-03.
+
+\bibitem{Vaillant94anoriginal}
+R.~Vaillant, C.~Monrocq, and Y.~L. Cun, ``An original approach for the
+  localization of objects in images,'' 1994.
+
+\bibitem{SermanetEZMFL13}
+P.~Sermanet, D.~Eigen, X.~Zhang, M.~Mathieu, R.~Fergus, and Y.~LeCun,
+  ``Overfeat: Integrated recognition, localization and detection using
+  convolutional networks,'' {\em CoRR}, vol.~abs/1312.6229, 2013.
+
+\bibitem{mnist-dataset}
+``The {MNIST} database of handwritten digits.''
+  \url{http://yann.lecun.com/exdb/mnist/}.
+\newblock Accessed: 2016-09-03.
+
+\bibitem{lecun1998}
+Y.~Lecun, L.~Bottou, Y.~Bengio, and P.~Haffner, ``Gradient-based learning
+  applied to document recognition,'' {\em Proceedings of the IEEE}, vol.~86,
+  pp.~2278--2324, Nov 1998.
+
+\bibitem{netzer2011}
+Y.~Netzer, T.~Wang, A.~Coates, A.~Bissacco, B.~Wu, and A.~Y. Ng, ``Reading
+  digits in natural images with unsupervised feature learning,'' {\em NIPS
+  Workshop on Deep Learning and Unsupervised Feature Learning}, 2011.
+
+\bibitem{GoodfellowBIAS13}
+I.~J. Goodfellow, Y.~Bulatov, J.~Ibarz, S.~Arnoud, and V.~D. Shet,
+  ``Multi-digit number recognition from street view imagery using deep
+  convolutional neural networks,'' {\em CoRR}, vol.~abs/1312.6082, 2013.
+
+\bibitem{mnist-multi-eval}
+``Some evaluation results of {MNIST} multi-digit model.''
+  \url{https://github.com/QuaziRandom/MLND_Capstone/tree/master/eval/mnist_multi_digit}.
+\newblock Updated: 2016-09-19.
+
+\bibitem{svhn-multi-eval}
+``Some evaluation results of detection model on {SVHN} test dataset.''
+  \url{https://github.com/QuaziRandom/MLND_Capstone/tree/master/eval/svhn_multi_digit}.
+\newblock Updated: 2016-09-19.
+
+\bibitem{google-street-view-samples}
+``Sample images from google street view/maps.''
+  \url{https://github.com/QuaziRandom/MLND_Capstone/tree/master/sample}.
+\newblock Accessed: 2016-09-25.
+
+\bibitem{combined-eval}
+``Evaluation results of combined model on {SVHN} test dataset.''
+  \url{https://github.com/QuaziRandom/MLND_Capstone/tree/master/eval/mnist_multi_digit}.
+\newblock Updated: 2016-09-19.
+
+\bibitem{KingmaB14}
+D.~P. Kingma and J.~Ba, ``Adam: {A} method for stochastic optimization,'' {\em
+  CoRR}, vol.~abs/1412.6980, 2014.
+
+\bibitem{Glorot10}
+X.~Glorot and Y.~Bengio, ``Understanding the difficulty of training deep
+  feedforward neural networks,'' in {\em In Proceedings of the International
+  Conference on Artificial Intelligence and Statistics (AISTATS’10). Society
+  for Artificial Intelligence and Statistics}, 2010.
+
+\bibitem{HeZR015}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Delving deep into rectifiers: Surpassing
+  human-level performance on imagenet classification,'' {\em CoRR},
+  vol.~abs/1502.01852, 2015.
+
+\bibitem{Bergstra2012}
+J.~Bergstra and Y.~Bengio, ``Random search for hyper-parameter optimization,''
+  {\em J. Mach. Learn. Res.}, vol.~13, pp.~281--305, Feb. 2012.
+
+\bibitem{cs231n}
+``{CS231}n: Convolutional neural networks for visual recognition.''
+  \url{http://cs231n.stanford.edu/}.
+\newblock Accessed: 2016-08-27.
+
+\bibitem{tensorflow-doc}
+``{T}ensor{F}low {API} documentation.''
+  \url{https://www.tensorflow.org/versions/r0.10/api_docs/index.html}.
+\newblock Accessed: 2016-08-20.
+
+\end{thebibliography}
